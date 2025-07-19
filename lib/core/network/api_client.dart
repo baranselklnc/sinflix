@@ -39,6 +39,13 @@ class ApiClient {
             print('API Request: No token found'); // Debug için
           }
           
+          // FormData için Content-Type'ı ayarla
+          if (options.data is FormData) {
+            options.headers['Content-Type'] = 'multipart/form-data';
+            options.headers['Accept'] = 'application/json';
+            print('API Request: Setting Content-Type for FormData');
+          }
+          
           _logger.i('REQUEST[${options.method}] => PATH: ${options.path}');
           _logger.i('REQUEST DATA: ${options.data}');
           handler.next(options);
@@ -55,6 +62,8 @@ class ApiClient {
             'ERROR[${error.response?.statusCode}] => PATH: ${error.requestOptions.path}',
           );
           _logger.e('ERROR MESSAGE: ${error.message}');
+          _logger.e('ERROR RESPONSE DATA: ${error.response?.data}');
+          _logger.e('ERROR RESPONSE HEADERS: ${error.response?.headers}');
           handler.next(error);
         },
       ),
