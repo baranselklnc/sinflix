@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/errors/app_exception.dart';
@@ -8,6 +9,7 @@ abstract class AuthService {
   Future<UserData> register(String email, String name, String password);
   Future<void> logout();
   Future<bool> isLoggedIn();
+  Future<String> uploadPhoto(File photo);
 }
 
 class AuthServiceImpl implements AuthService {
@@ -88,5 +90,39 @@ class AuthServiceImpl implements AuthService {
     // Bu method token'ın varlığını kontrol eder
     // Gerçek implementasyonda token'ın geçerliliğini de kontrol edebiliriz
     return true; // Şimdilik true döndürüyoruz
+  }
+
+  @override
+  Future<String> uploadPhoto(File photo) async {
+    try {
+      // Dosya uzantısını al
+      final extension = photo.path.split('.').last;
+      final filename = 'profile_photo.$extension';
+      
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          photo.path,
+          filename: filename,
+        ),
+      });
+
+      print('Uploading photo: $filename, size: ${await photo.length()} bytes');
+
+      final response = await _apiClient.post(
+        '/user/upload_photo',
+        data: formData,
+      );
+
+      print('Upload response: ${response.data}');
+      return response.data['data']['photoUrl'] as String;
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      print('Upload error: $e');
+      throw UnknownException(
+        message: 'Fotoğraf yüklenirken bir hata oluştu',
+        originalError: e,
+      );
+    }
   }
 } 
