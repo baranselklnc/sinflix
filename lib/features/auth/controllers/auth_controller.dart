@@ -71,4 +71,12 @@ class AuthController extends _$AuthController {
 
   bool get isLoggedIn => state.value != null;
   UserData? get currentUser => state.value;
+
+  void updatePhotoUrl(String photoUrl) {
+    final currentUser = state.value;
+    if (currentUser != null) {
+      final updatedUser = currentUser.copyWith(photoUrl: photoUrl);
+      state = AsyncValue.data(updatedUser);
+    }
+  }
 } 
