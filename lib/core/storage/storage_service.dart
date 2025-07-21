@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
-import '../constants/app_constants.dart';
 import '../errors/app_exception.dart';
 
 abstract class StorageService {

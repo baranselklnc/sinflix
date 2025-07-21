@@ -1,7 +1,10 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 import 'register_screen.dart';
 
@@ -66,6 +69,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final l10n = AppLocalizations.of(context);
+    
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -85,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     // Title
                     Text(
-                      'Merhabalar',
+                      l10n.welcome,
                       style: AppTextStyles.h1.copyWith(
                         color: AppColors.textPrimary,
                       ),
@@ -93,7 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Tempus varius a vitae interdum id tortor elementum tristique eleifend at.',
+                      l10n.welcomeSubtitle,
                       style: AppTextStyles.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -105,7 +110,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       style: AppTextStyles.input,
                       decoration: InputDecoration(
-                        labelText: 'E-posta',
+                        labelText: l10n.email,
                         labelStyle: AppTextStyles.inputLabel,
                         prefixIcon: const Icon(
                           Icons.email_outlined,
@@ -132,11 +137,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'E-posta adresi gerekli';
+                          return l10n.emailRequired;
                         }
                         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                             .hasMatch(value)) {
-                          return 'Geçerli bir e-posta adresi girin';
+                          return l10n.validEmailRequired;
                         }
                         return null;
                       },
@@ -149,7 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       obscureText: !_isPasswordVisible,
                       style: AppTextStyles.input,
                       decoration: InputDecoration(
-                        labelText: 'Şifre',
+                        labelText: l10n.password,
                         labelStyle: AppTextStyles.inputLabel,
                         prefixIcon: const Icon(
                           Icons.lock_outlined,
@@ -189,10 +194,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Şifre gerekli';
+                          return l10n.passwordRequired;
                         }
                         if (value.length < 6) {
-                          return 'Şifre en az 6 karakter olmalı';
+                          return l10n.passwordMinLength;
                         }
                         return null;
                       },
@@ -204,7 +209,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: Implement forgot password
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
@@ -212,7 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
-                          'Şifremi unuttum',
+                          l10n.forgotPassword,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textPrimary,
                             decoration: TextDecoration.underline,
@@ -246,7 +250,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             )
                           : Text(
-                              'Giriş Yap',
+                              l10n.login,
                               style: AppTextStyles.buttonLarge,
                             ),
                     ),
@@ -259,19 +263,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _buildSocialButton(
                           icon: Icons.g_mobiledata,
                           onPressed: () {
-                            // TODO: Implement Google login
+                            
                           },
                         ),
                         _buildSocialButton(
                           icon: Icons.apple,
                           onPressed: () {
-                            // TODO: Implement Apple login
+                            
                           },
                         ),
                         _buildSocialButton(
                           icon: Icons.facebook,
                           onPressed: () {
-                            // TODO: Implement Facebook login
+                            
                           },
                         ),
                       ],
@@ -283,7 +287,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Bir hesabın yok mu? ',
+                          l10n.noAccount,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -302,7 +306,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Kayıt Ol!',
+                            l10n.register,
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: AppColors.textPrimary,
                               decoration: TextDecoration.underline,

@@ -45,6 +45,10 @@ class AuthController extends _$AuthController {
     try {
       final userData = await _authService.register(email, name, password);
       state = AsyncValue.data(userData);
+      
+      // Başarılı kayıt sonrası token'ı storage'a kaydet
+      await _storageService.setString('token', userData.token);
+      await _storageService.setString('user_id', userData.id);
     } on AppException catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     } catch (e, stackTrace) {
@@ -58,6 +62,9 @@ class AuthController extends _$AuthController {
   Future<void> logout() async {
     try {
       await _authService.logout();
+      // Storage'ı temizle
+      await _storageService.remove('token');
+      await _storageService.remove('user_id');
       state = const AsyncValue.data(null);
     } on AppException catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
@@ -67,6 +74,11 @@ class AuthController extends _$AuthController {
         stackTrace,
       );
     }
+  }
+
+  // State'i manuel olarak temizle
+  void clearState() {
+    state = const AsyncValue.data(null);
   }
 
   bool get isLoggedIn => state.value != null;

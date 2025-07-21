@@ -34,16 +34,15 @@ class ApiClient {
           if (token != null && token.isNotEmpty) {
             // API'de token "Bearer " prefix'i olmadan gönderiliyor
             options.headers['Authorization'] = token;
-            print('API Request: Adding token - $token'); // Debug için
           } else {
-            print('API Request: No token found'); // Debug için
+            // ignore: avoid_print
+            print('No token found');
           }
           
           // FormData için Content-Type'ı ayarla
           if (options.data is FormData) {
             options.headers['Content-Type'] = 'multipart/form-data';
             options.headers['Accept'] = 'application/json';
-            print('API Request: Setting Content-Type for FormData');
           }
           
           _logger.i('REQUEST[${options.method}] => PATH: ${options.path}');
@@ -183,7 +182,7 @@ class ApiClient {
         );
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'] ?? 'Sunucu hatası';
+        final message = error.response?.data?['message'] ?? 'Böyle bir kullanıcı bulunamadı';
         
         if (statusCode == 401) {
           return AuthException(

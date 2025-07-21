@@ -6,6 +6,7 @@ import '../../../shared/models/movie_models.dart';
 abstract class MovieService {
   Future<MovieListData> getMovies(int page);
   Future<void> toggleFavorite(String movieId);
+  Future<MovieListData> getFavoriteMovies(int page);
 }
 
 class MovieServiceImpl implements MovieService {
@@ -41,16 +42,58 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<void> toggleFavorite(String movieId) async {
     try {
-      // TODO: Implement favorite toggle API
       await _apiClient.post(
-        '/movie/favorite',
-        data: {'movieId': movieId},
+        '/movie/favorite/$movieId',
       );
     } on AppException {
       rethrow;
     } catch (e) {
       throw UnknownException(
         message: 'Favori işlemi yapılırken bir hata oluştu',
+        originalError: e,
+      );
+    }
+  }
+
+  @override
+  Future<MovieListData> getFavoriteMovies(int page) async {
+    try {
+      final response = await _apiClient.get(
+        '/movie/favorites',
+        queryParameters: {'page': page},
+      );
+
+      print('Favorite movies response: ${response.data}'); // Debug için
+
+      // Favori filmler direkt data array'i olarak geliyor
+      if (response.data['data'] is List) {
+        final movies = (response.data['data'] as List)
+            .map((movieJson) => MovieModel.fromJson(movieJson))
+            .toList();
+        
+      
+        final pagination = PaginationModel(
+          totalCount: movies.length,
+          perPage: movies.length,
+          maxPage: 1,
+          currentPage: 1,
+        );
+        
+        return MovieListData(
+          movies: movies,
+          pagination: pagination,
+        );
+      } else {
+    
+        final movieListResponse = MovieListResponse.fromJson(response.data);
+        return movieListResponse.data;
+      }
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      print('Error in getFavoriteMovies: $e'); // Debug için
+      throw UnknownException(
+        message: 'Favori filmler yüklenirken bir hata oluştu',
         originalError: e,
       );
     }

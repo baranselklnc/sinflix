@@ -1,8 +1,15 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/services/dependency_injection.dart';
 import 'core/constants/app_colors.dart';
 import 'core/widgets/splash_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'core/controllers/theme_controller.dart';
+import 'core/localization/locale_controller.dart';
+import 'core/localization/app_localizations.dart';
 import 'features/auth/views/login_screen.dart';
 import 'features/auth/controllers/auth_controller.dart';
 import 'features/home/views/home_screen.dart';
@@ -31,6 +38,15 @@ class SinFlixApp extends ConsumerStatefulWidget {
 class _SinFlixAppState extends ConsumerState<SinFlixApp> {
   bool _showSplash = true;
 
+  @override
+  void initState() {
+    super.initState();
+    // Tema başlatma
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(themeControllerProvider.notifier).initializeTheme();
+    });
+  }
+
   void _onSplashComplete() {
     setState(() {
       _showSplash = false;
@@ -39,50 +55,24 @@ class _SinFlixAppState extends ConsumerState<SinFlixApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeControllerProvider);
+    final locale = ref.watch(localeControllerProvider);
+    
     return MaterialApp(
       title: 'SinFlix',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          brightness: Brightness.dark,
-        ),
-        scaffoldBackgroundColor: AppColors.background,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.textPrimary,
-          elevation: 0,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textPrimary,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: AppColors.cardBackground,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.secondary),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(
-              color: AppColors.primary,
-              width: 2,
-            ),
-          ),
-        ),
-      ),
+      theme: AppTheme.getTheme(themeMode),
+      locale: locale,
+      supportedLocales: const [
+        Locale('tr', 'TR'),
+        Locale('en', 'US'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: _showSplash
           ? SplashScreen(onAnimationComplete: _onSplashComplete)
           : _buildHome(),
@@ -92,7 +82,6 @@ class _SinFlixAppState extends ConsumerState<SinFlixApp> {
   Widget _buildHome() {
     final authState = ref.watch(authControllerProvider);
     
-    print('Main: Auth state - ${authState.toString()}'); // Debug için
     
     return authState.when(
       data: (userData) {
@@ -113,16 +102,14 @@ class _SinFlixAppState extends ConsumerState<SinFlixApp> {
       error: (error, stackTrace) => const LoginScreen(),
     );
   }
-
-
 }
 
-class _MainNavigationScreen extends StatefulWidget {
+class _MainNavigationScreen extends ConsumerStatefulWidget {
   @override
-  State<_MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<_MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<_MainNavigationScreen> {
+class _MainNavigationScreenState extends ConsumerState<_MainNavigationScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
@@ -132,17 +119,17 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('MainNavigation: Building with index $_currentIndex'); // Debug için
+    final currentLocale = ref.watch(localeControllerProvider);
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.black,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black26,
               blurRadius: 8,
-              offset: Offset(0, -2),
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -154,13 +141,13 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               children: [
                 _buildNavItem(
                   icon: Icons.home,
-                  label: 'Anasayfa',
+                  label: currentLocale.languageCode == 'en' ? 'Home' : 'Anasayfa',
                   isSelected: _currentIndex == 0,
                   onTap: () => setState(() => _currentIndex = 0),
                 ),
                 _buildNavItem(
                   icon: Icons.person,
-                  label: 'Profil',
+                  label: currentLocale.languageCode == 'en' ? 'Profile' : 'Profil',
                   isSelected: _currentIndex == 1,
                   onTap: () => setState(() => _currentIndex = 1),
                 ),
@@ -183,10 +170,10 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(50),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -195,14 +182,14 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           children: [
             Icon(
               icon,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               size: 30,
             ),
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

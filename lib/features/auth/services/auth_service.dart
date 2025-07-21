@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../shared/models/auth_models.dart';
@@ -10,6 +11,7 @@ abstract class AuthService {
   Future<void> logout();
   Future<bool> isLoggedIn();
   Future<String> uploadPhoto(File photo);
+  Future<UserData> getCurrentUser();
 }
 
 class AuthServiceImpl implements AuthService {
@@ -106,7 +108,6 @@ class AuthServiceImpl implements AuthService {
         ),
       });
 
-      print('Uploading photo: $filename, size: ${await photo.length()} bytes');
 
       final response = await _apiClient.post(
         '/user/upload_photo',
@@ -118,11 +119,30 @@ class AuthServiceImpl implements AuthService {
     } on AppException {
       rethrow;
     } catch (e) {
-      print('Upload error: $e');
+      if (kDebugMode) {
+        print('Upload error: $e');
+      }
       throw UnknownException(
         message: 'Fotoğraf yüklenirken bir hata oluştu',
         originalError: e,
       );
     }
   }
+
+  @override
+  Future<UserData> getCurrentUser() async {
+    try {
+      final response = await _apiClient.get('/user/profile');
+      final userData = UserData.fromJson(response.data['data']);
+      return userData;
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw UnknownException(
+        message: 'Kullanıcı bilgileri alınırken bir hata oluştu',
+        originalError: e,
+      );
+    }
+  }
+
 } 

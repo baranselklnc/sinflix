@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -19,6 +21,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _hasShownConfetti = false; // Confetti gösterilip gösterilmediğini takip et
+
+  @override
+  void initState() {
+    super.initState();
+    // Register screen açıldığında auth state'i temizle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Sadece register screen'den geldiyse temizle
+      if (mounted) {
+        // Auth state'i temizleme - register işlemi sonrası otomatik giriş yapılacak
+        // ref.read(authControllerProvider.notifier).clearState();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -66,27 +82,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   void _showTermsAndConditions(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          'Kullanıcı Sözleşmesi',
+          l10n.termsAndConditionsTitle,
           style: AppTextStyles.h5.copyWith(color: AppColors.textPrimary),
         ),
         content: SingleChildScrollView(
           child: Text(
-            'Bu Kullanıcı Sözleşmesi ("Sözleşme"), SinFlix uygulamasını kullanımınızı düzenler.\n\n'
-            '1. Hizmet Kullanımı\n'
-            'SinFlix, film ve dizi izleme hizmeti sunar. Hizmeti kullanarak bu sözleşmeyi kabul etmiş olursunuz.\n\n'
-            '2. Hesap Güvenliği\n'
-            'Hesap bilgilerinizi güvenli tutmak sizin sorumluluğunuzdadır.\n\n'
-            '3. İçerik Kullanımı\n'
-            'Tüm içerik telif hakkı korumalıdır ve sadece kişisel kullanım için izin verilir.\n\n'
-            '4. Değişiklikler\n'
-            'Bu sözleşme önceden haber verilmeksizin değiştirilebilir.\n\n'
-            '5. İletişim\n'
-            'Sorularınız için support@sinflix.com adresine yazabilirsiniz.',
+            l10n.termsContent,
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
           ),
         ),
@@ -94,7 +101,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              'Kapat',
+              l10n.close,
               style: AppTextStyles.buttonMedium.copyWith(color: AppColors.primary),
             ),
           ),
@@ -103,10 +110,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  void _showSuccessDialog(BuildContext context) {
+    void _showSuccessDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false, // Kullanıcı dialog'u kapatamaz
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
@@ -117,7 +125,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withAlpha(26),// change this line withAlpha
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -129,22 +137,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Başarılı!',
+                l10n.success,
                 style: AppTextStyles.h5.copyWith(color: AppColors.textPrimary),
               ),
             ),
           ],
         ),
         content: Text(
-          'Hesabınız başarıyla oluşturuldu!\n\n'
-          'Artık SinFlix uygulamasına giriş yapabilir ve film dünyasının keyfini çıkarabilirsiniz.',
+          '${l10n.accountCreatedSuccess}\n\n${l10n.startEnjoyingMovies}',
           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(); // Dialog'u kapat
-              Navigator.of(context).pop(); // Register ekranından çık
+              // Register screen'den çık ve main.dart'taki auth state kontrolünün çalışmasına izin ver
+              Navigator.of(context).pop(); // Register screen'den çık
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -154,7 +162,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ),
             child: Text(
-              'Tamam',
+              l10n.continueText,
               style: AppTextStyles.buttonMedium,
             ),
           ),
@@ -163,30 +171,56 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
+  void _showConfettiAnimation(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: Lottie.asset(
+            'assets/animations/Confetti.json',
+            fit: BoxFit.cover,
+            repeat: false,
+            onLoaded: (composition) {
+              // Animasyon bittiğinde dialog'u kapat ve success dialog'u göster
+              Future.delayed(Duration(milliseconds: composition.duration.inMilliseconds), () {
+                Navigator.of(context).pop(); // Confetti dialog'u kapat
+                _showSuccessDialog(context);
+              });
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getTermsPrefix(AppLocalizations l10n) {
+    final parts = l10n.acceptTerms.split(l10n.terms);
+    return parts.isNotEmpty ? parts[0] : '';
+  }
+
+  String _getTermsSuffix(AppLocalizations l10n) {
+    final parts = l10n.acceptTerms.split(l10n.privacy);
+    return parts.length > 1 ? parts[1] : '';
+  }
+
   void _showPrivacyPolicy(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          'Gizlilik Politikası',
+          l10n.privacyPolicyTitle,
           style: AppTextStyles.h5.copyWith(color: AppColors.textPrimary),
         ),
         content: SingleChildScrollView(
           child: Text(
-            'Bu Gizlilik Politikası, kişisel verilerinizin nasıl toplandığını ve kullanıldığını açıklar.\n\n'
-            '1. Toplanan Veriler\n'
-            'E-posta adresi, ad soyad ve kullanım verileri toplanır.\n\n'
-            '2. Veri Kullanımı\n'
-            'Verileriniz hizmet kalitesini artırmak için kullanılır.\n\n'
-            '3. Veri Güvenliği\n'
-            'Verileriniz güvenli sunucularda saklanır ve şifrelenir.\n\n'
-            '4. Üçüncü Taraf Paylaşımı\n'
-            'Verileriniz üçüncü taraflarla paylaşılmaz.\n\n'
-            '5. Çerezler\n'
-            'Deneyiminizi iyileştirmek için çerezler kullanılır.\n\n'
-            '6. Değişiklikler\n'
-            'Bu politika güncellenebilir ve değişiklikler size bildirilir.',
+            l10n.privacyContent,
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
           ),
         ),
@@ -194,7 +228,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              'Kapat',
+              l10n.close,
               style: AppTextStyles.buttonMedium.copyWith(color: AppColors.primary),
             ),
           ),
@@ -206,11 +240,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final l10n = AppLocalizations.of(context);
     
-    // Başarılı kayıt sonrası dialog göster
-    if (authState.hasValue && authState.value != null) {
+    // Başarılı kayıt sonrası confetti animasyonu göster
+    if (authState.hasValue && authState.value != null && !_hasShownConfetti) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showSuccessDialog(context);
+        _showConfettiAnimation(context);
+        _hasShownConfetti = true; // Confetti animasyonu gösterildiğini işaretle
       });
     }
     
@@ -218,7 +254,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          'Kayıt Ol',
+          l10n.register,
           style: AppTextStyles.h6,
         ),
         backgroundColor: AppColors.surface,
@@ -242,7 +278,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 children: [
                   // Title
                   Text(
-                    'Hoşgeldiniz',
+                    l10n.welcome,
                     style: AppTextStyles.h3.copyWith(
                       color: AppColors.textPrimary,
                     ),
@@ -250,7 +286,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Film dünyasına katılmak için hesap oluşturun',
+                    l10n.createAccountDescription,
                     style: AppTextStyles.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -262,7 +298,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     keyboardType: TextInputType.name,
                     style: AppTextStyles.input,
                     decoration: InputDecoration(
-                      labelText: 'Ad Soyad',
+                      labelText: l10n.name,
                       labelStyle: AppTextStyles.inputLabel,
                       prefixIcon: const Icon(
                         Icons.person_outlined,
@@ -289,10 +325,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Ad soyad gerekli';
+                        return l10n.nameRequired;
                       }
                       if (value.length < 2) {
-                        return 'Ad soyad en az 2 karakter olmalı';
+                        return l10n.nameMinLength;
                       }
                       return null;
                     },
@@ -305,7 +341,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                     style: AppTextStyles.input,
                     decoration: InputDecoration(
-                      labelText: 'E-posta',
+                      labelText: l10n.email,
                       labelStyle: AppTextStyles.inputLabel,
                       prefixIcon: const Icon(
                         Icons.email_outlined,
@@ -332,11 +368,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'E-posta adresi gerekli';
+                        return l10n.emailRequired;
                       }
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                           .hasMatch(value)) {
-                        return 'Geçerli bir e-posta adresi girin';
+                        return l10n.validEmailRequired;
                       }
                       return null;
                     },
@@ -349,7 +385,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     obscureText: !_isPasswordVisible,
                     style: AppTextStyles.input,
                     decoration: InputDecoration(
-                      labelText: 'Şifre',
+                      labelText: l10n.password,
                       labelStyle: AppTextStyles.inputLabel,
                       prefixIcon: const Icon(
                         Icons.lock_outlined,
@@ -389,10 +425,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Şifre gerekli';
+                        return l10n.passwordRequired;
                       }
                       if (value.length < 6) {
-                        return 'Şifre en az 6 karakter olmalı';
+                        return l10n.passwordMinLength;
                       }
                       return null;
                     },
@@ -405,7 +441,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     obscureText: !_isConfirmPasswordVisible,
                     style: AppTextStyles.input,
                     decoration: InputDecoration(
-                      labelText: 'Şifre Tekrar',
+                      labelText: l10n.confirmPassword,
                       labelStyle: AppTextStyles.inputLabel,
                       prefixIcon: const Icon(
                         Icons.lock_outlined,
@@ -445,10 +481,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Şifre tekrarı gerekli';
+                        return l10n.confirmPasswordRequired;
                       }
                       if (value != _passwordController.text) {
-                        return 'Şifreler eşleşmiyor';
+                        return l10n.passwordsDoNotMatch;
                       }
                       return null;
                     },
@@ -479,7 +515,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                           )
                         : Text(
-                            'Kayıt Ol',
+                            l10n.register,
                             style: AppTextStyles.buttonLarge,
                           ),
                   ),
@@ -490,10 +526,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.1),
+                        color: AppColors.error.withAlpha(26),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: AppColors.error.withOpacity(0.3),
+                          color: AppColors.error.withAlpha(76),
                         ),
                       ),
                       child: Text(
@@ -513,19 +549,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       _buildSocialButton(
                         icon: Icons.g_mobiledata,
                         onPressed: () {
-                          // TODO: Implement Google sign up
                         },
                       ),
                       _buildSocialButton(
                         icon: Icons.apple,
                         onPressed: () {
-                          // TODO: Implement Apple sign up
                         },
                       ),
                       _buildSocialButton(
                         icon: Icons.facebook,
                         onPressed: () {
-                          // TODO: Implement Facebook sign up
                         },
                       ),
                     ],
@@ -544,37 +577,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               color: AppColors.textSecondary,
                             ),
                             children: [
-                              const TextSpan(text: 'Kayıt olarak '),
+                              TextSpan(text: _getTermsPrefix(l10n)),
                               WidgetSpan(
                                 child: GestureDetector(
                                   onTap: () {
                                     _showTermsAndConditions(context);
                                   },
                                   child: Text(
-                                    'Kullanıcı Sözleşmesi',
+                                    l10n.terms,
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.primary,
+                                      color: AppColors.textPrimary,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),
                               ),
-                              const TextSpan(text: ' ve '),
+                              TextSpan(text: ' ve ',style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textPrimary,
+                                      decoration: TextDecoration.underline,
+                                    ),),
                               WidgetSpan(
                                 child: GestureDetector(
                                   onTap: () {
                                     _showPrivacyPolicy(context);
                                   },
                                   child: Text(
-                                    'Gizlilik Politikası',
+                                    l10n.privacy,
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.primary,
+                                      color: AppColors.textPrimary,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),
                               ),
-                              const TextSpan(text: '\'nı kabul etmiş olursunuz.'),
+                              TextSpan(text: _getTermsSuffix(l10n)),
                             ],
                           ),
                         ),
@@ -588,7 +624,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Zaten hesabın var mı? ',
+                        l10n.alreadyHaveAccount,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -603,7 +639,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
-                          'Giriş Yap!',
+                          l10n.login,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textPrimary,
                             decoration: TextDecoration.underline,

@@ -1,11 +1,13 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/services/dependency_injection.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../auth/services/auth_service.dart';
 
 class UploadPhotoScreen extends ConsumerStatefulWidget {
@@ -21,6 +23,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -35,13 +38,14 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
         });
       }
     } catch (e) {
-      _showErrorSnackBar('Fotoğraf seçilirken hata oluştu');
+      _showErrorSnackBar(l10n.anErrorOccurred);
     }
   }
 
   Future<void> _uploadPhoto() async {
+    final l10n = AppLocalizations.of(context);
     if (_selectedImage == null) {
-      _showErrorSnackBar('Lütfen bir fotoğraf seçin');
+      _showErrorSnackBar(l10n.pleaseSelectPhoto);
       return;
     }
 
@@ -54,13 +58,13 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
       final photoUrl = await authService.uploadPhoto(_selectedImage!);
       
       if (mounted) {
-        _showSuccessSnackBar('Fotoğraf başarıyla yüklendi');
+        _showSuccessSnackBar(l10n.photoUploadSuccess);
         Navigator.pop(context, photoUrl);
       }
     } on AppException catch (e) {
       _showErrorSnackBar(e.message);
     } catch (e) {
-      _showErrorSnackBar('Fotoğraf yüklenirken hata oluştu');
+      _showErrorSnackBar(l10n.photoUploadError);
     } finally {
       if (mounted) {
         setState(() {
@@ -71,10 +75,11 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
   }
 
   void _showErrorSnackBar(String message) {
+    final colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.error,
+        backgroundColor: colorScheme.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -92,16 +97,22 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Profil Detayı'),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        title: Text(
+          l10n.profileDetails,
+          style: TextStyle(color: colorScheme.onSurface),
+        ),
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
       ),
       body: Padding(
@@ -111,17 +122,17 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
           children: [
             // Header Text
             Text(
-              'Fotoğraflarınızı Yükleyin',
+              l10n.uploadPhotoTitle,
               style: AppTextStyles.h3.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onBackground,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Profil fotoğrafınızı seçerek kişiselleştirin',
+              l10n.uploadPhotoSubtitle,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
             const SizedBox(height: 40),
@@ -135,10 +146,10 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                     width: double.infinity,
                     height: 300,
                     decoration: BoxDecoration(
-                      color: AppColors.cardBackground,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.secondary.withOpacity(0.3),
+                        color: colorScheme.outline.withOpacity(0.3),
                         width: 2,
                       ),
                     ),
@@ -158,21 +169,21 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                               Icon(
                                 Icons.add_photo_alternate_outlined,
                                 size: 64,
-                                color: AppColors.textSecondary,
+                                color: colorScheme.onSurface.withOpacity(0.6),
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Fotoğraf Seç',
+                                l10n.selectPhoto,
                                 style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: colorScheme.onSurface.withOpacity(0.6),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Galeriden fotoğraf seçin',
+                                l10n.selectPhotoFromGallery,
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: colorScheme.onSurface.withOpacity(0.6),
                                 ),
                               ),
                             ],
@@ -190,28 +201,28 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
               child: ElevatedButton(
                 onPressed: _selectedImage != null && !_isUploading ? _uploadPhoto : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: _isUploading
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                         ),
                       )
-                    : Text(
-                        'Devam Et',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                                            : Text(
+                            l10n.continueText,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: colorScheme.onPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
               ),
             ),
           ],
