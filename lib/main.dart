@@ -138,20 +138,22 @@ class _MainNavigationScreenState extends ConsumerState<_MainNavigationScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.home,
-                  label: currentLocale.languageCode == 'en' ? 'Home' : 'Anasayfa',
-                  isSelected: _currentIndex == 0,
-                  onTap: () => setState(() => _currentIndex = 0),
-                ),
-                _buildNavItem(
-                  icon: Icons.person,
-                  label: currentLocale.languageCode == 'en' ? 'Profile' : 'Profil',
-                  isSelected: _currentIndex == 1,
-                  onTap: () => setState(() => _currentIndex = 1),
-                ),
-              ],
+                          children: [
+              _buildNavItem(
+                iconPath: 'assets/icons/homepage.png',
+                icon: null,
+                label: currentLocale.languageCode == 'en' ? 'Home' : 'Anasayfa',
+                isSelected: _currentIndex == 0,
+                onTap: () => setState(() => _currentIndex = 0),
+              ),
+              _buildNavItem(
+                iconPath: 'assets/icons/profile_icon.png',
+                icon: null,
+                label: currentLocale.languageCode == 'en' ? 'Profile' : 'Profil',
+                isSelected: _currentIndex == 1,
+                onTap: () => setState(() => _currentIndex = 1),
+              ),
+            ],
             ),
           ),
         ),
@@ -160,7 +162,8 @@ class _MainNavigationScreenState extends ConsumerState<_MainNavigationScreen> {
   }
 
   Widget _buildNavItem({
-    required IconData icon,
+    required String? iconPath,
+    required IconData? icon,
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
@@ -170,26 +173,44 @@ class _MainNavigationScreenState extends ConsumerState<_MainNavigationScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: isSelected 
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(50),
           border: Border.all(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-            width: 1,
+            color: isSelected 
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: Theme.of(context).colorScheme.onSurface,
-              size: 30,
-            ),
+            if (iconPath != null)
+              Image.asset(
+                iconPath,
+                width: 24,
+                height: 24,
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface,
+              )
+            else if (icon != null)
+              Icon(
+                icon,
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface,
+                size: 24,
+              ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

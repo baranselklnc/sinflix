@@ -41,7 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildSocialButton({
-    required IconData icon,
+    required String imagePath,
     required VoidCallback onPressed,
   }) {
     return Container(
@@ -55,12 +55,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           width: 1,
         ),
       ),
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(
-          icon,
-          color: AppColors.textPrimary,
-          size: 24,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              width: 24,
+              height: 24,
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
       ),
     );
@@ -261,21 +268,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildSocialButton(
-                          icon: Icons.g_mobiledata,
+                          imagePath: 'assets/icons/google.png',
                           onPressed: () {
-                            
+                            // Google ile giriş
                           },
                         ),
                         _buildSocialButton(
-                          icon: Icons.apple,
+                          imagePath: 'assets/icons/apple.png',
                           onPressed: () {
-                            
+                            // Apple ile giriş
                           },
                         ),
                         _buildSocialButton(
-                          icon: Icons.facebook,
+                          imagePath: 'assets/icons/facebook.png',
                           onPressed: () {
-                            
+                            // Facebook ile giriş
                           },
                         ),
                       ],

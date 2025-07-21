@@ -76,6 +76,11 @@ flutter:
     - assets/icons/daha_fazla_eslesme.png
     - assets/icons/one_cikarma.png
     - assets/icons/premium.png
+    - assets/icons/apple.png
+    - assets/icons/google.png
+    - assets/icons/facebook.png
+    - assets/icons/homepage.png
+    - assets/icons/profile_icon.png
   
   generate: true
     

@@ -121,40 +121,44 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Text
-            Text(
-              l10n.uploadPhotoTitle,
-              style: AppTextStyles.h3.copyWith(
-                color: colorScheme.onBackground,
-                fontWeight: FontWeight.bold,
+            Center(
+              child: Text(
+                l10n.uploadPhotoTitle,
+                style: AppTextStyles.h3.copyWith(
+                  color: colorScheme.onBackground,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              l10n.uploadPhotoSubtitle,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.7),
+            Center(
+              child: Text(
+                l10n.uploadPhotoSubtitle,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.7),
+                ),
               ),
             ),
             const SizedBox(height: 40),
 
-            // Photo Upload Area
+                        // Photo Upload Area
             Expanded(
               child: Center(
                 child: GestureDetector(
                   onTap: _pickImage,
-                  child: Container(
-                    width: double.infinity,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: colorScheme.outline.withOpacity(0.3),
-                        width: 2,
-                      ),
-                    ),
-                    child: _selectedImage != null
-                        ? ClipRRect(
+                  child: _selectedImage != null
+                      ? Container(
+                          width: double.infinity,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: colorScheme.outline.withOpacity(0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(14),
                             child: Image.file(
                               _selectedImage!,
@@ -162,33 +166,33 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                               width: double.infinity,
                               height: double.infinity,
                             ),
-                          )
-                        : Column(
+                          ),
+                        )
+                                              : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.add_photo_alternate_outlined,
-                                size: 64,
-                                color: colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                l10n.selectPhoto,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: colorScheme.onSurface.withOpacity(0.6),
-                                  fontWeight: FontWeight.w500,
+                              const SizedBox(height: 60), // Daha yukarı kaydır
+                              Container(
+                                width: 140,
+                                height: 140,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: colorScheme.outline.withOpacity(0.3),
+                                    width: 1,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                l10n.selectPhotoFromGallery,
-                                style: AppTextStyles.caption.copyWith(
-                                  color: colorScheme.onSurface.withOpacity(0.6),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 56,
+                                    color: colorScheme.onSurface.withOpacity(0.6),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                  ),
                 ),
               ),
             ),
