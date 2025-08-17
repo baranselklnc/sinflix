@@ -3,9 +3,7 @@
 ## Notlar
 
    ## Proje Hakkında
-   Bu proje, Flutter Developer pozisyonu için hazırlanan teknik değerlendirme görevi kapsamında geliştirilmiştir.  
-   Projede, kimlik doğrulama, sonsuz kaydırma, favori işlemleri, profil yönetimi, state yönetimi ve clean architecture gibi temel gereksinimler eksiksiz olarak uygulanmıştır.  
-   Ayrıca taskta belirtilen bonus özellikler de başarıyla entegre edilmiştir.  
+   Projede, kimlik doğrulama, sonsuz kaydırma, favori işlemleri, profil yönetimi, state yönetimi ve clean architecture gibi temel gereksinimler eksiksiz olarak uygulanmıştır.   
    Uygulama, kullanıcı deneyimini ön planda tutarak performans ve UI/UX optimizasyonlarıyla geliştirilmiştir.
 
 - **Asset Optimizasyonu:**
@@ -24,10 +22,8 @@
 
 - **Test Crash Gösterimi:**
   - Test crash gönderiminin gösterilebilmesi amacıyla ana sayfanın sağ üstüne bug (hata) simgesi yerleştirildi.
-  - Bu kısım, Figma tasarımı dışına zorunlu olarak çıkılarak uygulandı.
 
-- **Bonus Özellikler:**
-  - Task içinde opsiyonel olarak belirtilen tüm bonus özellikler başarıyla projeye entegre edildi.
+
 
 
 ## Uygulamanın birkaç ekran görüntüsü 
